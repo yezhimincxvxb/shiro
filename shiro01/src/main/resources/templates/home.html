@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+<h2>注册</h2>
+<form action="/register" method="post">
+    <p>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Username">
+    </p>
+    <p>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+    </p>
+    <button type="submit">Register</button>
+</form>
+
+<h3>admin</h3>
+<h4>
+    <a href="/admin">Admin角色</a>
+</h4>
+<p><a href="/admin/select">Admin角色,拥有 select 权限</a></p>
+<p><a href="/admin/create">Admin角色,拥有 create 权限</a></p>
+<p><a href="/admin/update">Admin角色,拥有 update 权限</a></p>
+<p><a href="/admin/delete">Admin角色,拥有 delete 权限</a></p>
+
+<h3>user</h3>
+<h4>
+    <a href="/user">User角色</a>
+</h4>
+<p><a href="/user/select">User角色,拥有 select 权限</a></p>
+<p><a href="/user/create">User角色,拥有 create 权限</a></p>
+<p><a href="/user/update">User角色,拥有 update 权限</a></p>
+<p><a href="/user/delete">User角色,拥有 delete 权限</a></p>
+<p><a href="/user/createAndUpdate">User角色,拥有 create and update 权限</a></p>
+
+</body>
+</html>
