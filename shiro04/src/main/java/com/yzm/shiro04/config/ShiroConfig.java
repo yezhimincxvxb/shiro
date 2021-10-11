@@ -15,6 +15,8 @@ import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.Cookie;
 import org.apache.shiro.web.servlet.SimpleCookie;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -79,13 +81,36 @@ public class ShiroConfig {
     }
 
     /**
-     * ehcache缓存管理器
+     * ehcache缓存
      */
     @Bean
     public EhCacheManager ehCacheManager(){
         EhCacheManager cacheManager = new EhCacheManager();
         cacheManager.setCacheManagerConfigFile("classpath:config/ehcache-shiro.xml");
         return cacheManager;
+    }
+
+    /**
+     * redis缓存
+     */
+    @Bean
+    public RedisManager redisManager(){
+        RedisManager redisManager = new RedisManager();
+        redisManager.setHost("127.0.0.1:6379");
+        redisManager.setPassword("1234");
+        redisManager.setDatabase(0);
+        return redisManager;
+    }
+
+    @Bean
+    public RedisCacheManager redisCacheManager(){
+        RedisCacheManager redisCacheManager = new RedisCacheManager();
+        redisCacheManager.setRedisManager(redisManager());
+        // redis中针对不同用户缓存
+        redisCacheManager.setPrincipalIdFieldName("username");
+        // 用户权限信息缓存时间
+        redisCacheManager.setExpire(200000);
+        return redisCacheManager;
     }
 
     /**
@@ -99,7 +124,7 @@ public class ShiroConfig {
         // 记住我
         securityManager.setRememberMeManager(rememberMeManager());
         // 缓存
-        securityManager.setCacheManager(ehCacheManager());
+        securityManager.setCacheManager(redisCacheManager());
         return securityManager;
     }
 

@@ -1,6 +1,7 @@
 package com.yzm.shiro05.controller;
 
 import com.yzm.common.entity.HttpResult;
+import com.yzm.shiro05.config.MySessionListener;
 import com.yzm.shiro05.entity.User;
 import com.yzm.shiro05.service.UserService;
 import com.yzm.shiro05.utils.EncryptUtils;
@@ -26,9 +27,11 @@ import java.io.IOException;
 public class HomeController {
 
     private final UserService userService;
+    private final MySessionListener sessionListener;
 
-    public HomeController(UserService userService) {
+    public HomeController(UserService userService, MySessionListener sessionListener) {
         this.userService = userService;
+        this.sessionListener = sessionListener;
     }
 
     @GetMapping("login")
@@ -101,6 +104,12 @@ public class HomeController {
     @ResponseBody
     public Object userList2() {
         return userService.list();
+    }
+
+    @GetMapping("count")
+    @ResponseBody
+    public Object sessionCount() {
+        return sessionListener.getSessionCount().get();
     }
 
 }

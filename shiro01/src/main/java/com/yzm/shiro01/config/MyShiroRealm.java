@@ -1,17 +1,17 @@
-package com.yzm.shiro05.config;
+package com.yzm.shiro01.config;
 
-
-import com.yzm.shiro05.entity.Permissions;
-import com.yzm.shiro05.entity.Role;
-import com.yzm.shiro05.entity.User;
-import com.yzm.shiro05.service.PermissionsService;
-import com.yzm.shiro05.service.RoleService;
-import com.yzm.shiro05.service.UserService;
+import com.yzm.shiro01.entity.Permissions;
+import com.yzm.shiro01.entity.Role;
+import com.yzm.shiro01.entity.User;
+import com.yzm.shiro01.service.PermissionsService;
+import com.yzm.shiro01.service.RoleService;
+import com.yzm.shiro01.service.UserService;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SimpleShiroRealm extends AuthorizingRealm {
+public class MyShiroRealm extends AuthorizingRealm {
 
     private final UserService userService;
     private final RoleService roleService;
     private final PermissionsService permissionsService;
 
-    public SimpleShiroRealm(UserService userService, RoleService roleService, PermissionsService permissionsService) {
+    public MyShiroRealm(UserService userService, RoleService roleService, PermissionsService permissionsService) {
         this.userService = userService;
         this.roleService = roleService;
         this.permissionsService = permissionsService;
@@ -88,51 +88,7 @@ public class SimpleShiroRealm extends AuthorizingRealm {
         }
 
         return new SimpleAuthenticationInfo(
-                user.getUsername(), user.getPassword(), new MySimpleByteSource(user.getCredentialsSalt()), getName()
+                user.getUsername(), user.getPassword(), ByteSource.Util.bytes(user.getCredentialsSalt()), getName()
         );
     }
-
-    /**
-     * 重写方法,清除当前用户的的 授权缓存
-     */
-    @Override
-    public void clearCachedAuthorizationInfo(PrincipalCollection principals) {
-        super.clearCachedAuthorizationInfo(principals);
-    }
-
-    /**
-     * 重写方法，清除当前用户的 认证缓存
-     */
-    @Override
-    public void clearCachedAuthenticationInfo(PrincipalCollection principals) {
-        super.clearCachedAuthenticationInfo(principals);
-    }
-
-    @Override
-    public void clearCache(PrincipalCollection principals) {
-        super.clearCache(principals);
-    }
-
-    /**
-     * 自定义方法：清除所有 授权缓存
-     */
-    public void clearAllCachedAuthorizationInfo() {
-        super.getAuthorizationCache().clear();
-    }
-
-    /**
-     * 自定义方法：清除所有 认证缓存
-     */
-    public void clearAllCachedAuthenticationInfo() {
-        super.getAuthenticationCache().clear();
-    }
-
-    /**
-     * 自定义方法：清除所有的  认证缓存  和 授权缓存
-     */
-    public void clearAllCache() {
-        clearAllCachedAuthenticationInfo();
-        clearAllCachedAuthorizationInfo();
-    }
-
 }

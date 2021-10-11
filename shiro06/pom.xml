@@ -10,10 +10,10 @@
         <relativePath>../pom.xml</relativePath> <!-- lookup parent from repository -->
     </parent>
 
-    <artifactId>shiro04</artifactId>
+    <artifactId>shiro06</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>shiro04</name>
+    <name>shiro06</name>
     <description>Demo project for Spring Boot</description>
 
     <dependencies>
@@ -23,14 +23,6 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-        <!-- ehcache -->
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-ehcache</artifactId>
-            <version>1.5.0</version>
-        </dependency>
-
-        <!-- redis -->
         <dependency>
             <groupId>org.crazycake</groupId>
             <artifactId>shiro-redis</artifactId>

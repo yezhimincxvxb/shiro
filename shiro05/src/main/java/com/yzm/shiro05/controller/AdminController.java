@@ -1,11 +1,14 @@
 package com.yzm.shiro05.controller;
 
-import com.yzm.shiro05.config.SimpleShiroRealm;
+import com.yzm.shiro05.config.MyShiroRealm;
 import com.yzm.shiro05.entity.Role;
+import com.yzm.shiro05.entity.User;
 import com.yzm.shiro05.service.RoleService;
+import com.yzm.shiro05.service.UserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,9 +24,11 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final RoleService roleService;
+    private final UserService userService;
 
-    public AdminController(RoleService roleService) {
+    public AdminController(RoleService roleService, UserService userService) {
         this.roleService = roleService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -57,46 +62,55 @@ public class AdminController {
 
 
     /**
-     * 给admin用户添加 admin:delete 权限
+     * admin管理员给user用户添加 user:delete 权限(8)
      */
     @GetMapping("/addPermission")
     public String addPermission() {
+        String username = "yzm";
+        User yzm = userService.lambdaQuery().eq(User::getUsername, username).one();
 
-        Role admin = roleService.lambdaQuery().eq(Role::getRName, "ADMIN").one();
-        Set<String> perms = Arrays.stream(admin.getPIds().split(",")).collect(Collectors.toSet());
-        perms.add("4");
-        admin.setPIds(String.join(",", perms));
-        roleService.updateById(admin);
+        Role yzmR = roleService.lambdaQuery().eq(Role::getRId, yzm.getRIds()).one();
+        Set<String> perms = Arrays.stream(yzmR.getPIds().split(",")).collect(Collectors.toSet());
+        perms.add("8");
+        yzmR.setPIds(String.join(",", perms));
+        roleService.updateById(yzmR);
 
-        //添加成功之后 清除缓存
+        // 添加成功之后 清除缓存
         DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-        SimpleShiroRealm shiroRealm = (SimpleShiroRealm) securityManager.getRealms().iterator().next();
-        // 删除所有人的缓存
-        shiroRealm.clearAllCache();
-        return "给admin用户添加 admin:delete 权限成功";
+        MyShiroRealm shiroRealm = (MyShiroRealm) securityManager.getRealms().iterator().next();
+        // 删除指定用户的权限缓存
+        SimplePrincipalCollection collection = new SimplePrincipalCollection(username, shiroRealm.getName());
+        shiroRealm.getAuthorizationCache().remove(collection);
+
+        // 删除当前登录用户的权限缓存
+        //shiroRealm.clearCachedAuthorizationInfo(SecurityUtils.getSubject().getPrincipals());
+        // 删除当前登录用户的认证和权限缓存
+        //shiroRealm.clearCache(SecurityUtils.getSubject().getPrincipals());
+        return "添加 user:delete 权限成功";
 
     }
 
     /**
-     * 删除admin用户 admin:delete 权限
+     * admin管理员给user用户删除 user:delete 权限(8)
      */
     @GetMapping("/delPermission")
     public String delPermission() {
+        String username = "yzm";
+        User yzm = userService.lambdaQuery().eq(User::getUsername, username).one();
 
-        Role admin = roleService.lambdaQuery().eq(Role::getRName, "ADMIN").one();
-        Set<String> perms = Arrays.stream(admin.getPIds().split(",")).collect(Collectors.toSet());
-        perms.remove("4");
-        admin.setPIds(String.join(",", perms));
-        roleService.updateById(admin);
+        Role yzmR = roleService.lambdaQuery().eq(Role::getRId, yzm.getRIds()).one();
+        Set<String> perms = Arrays.stream(yzmR.getPIds().split(",")).collect(Collectors.toSet());
+        perms.remove("8");
+        yzmR.setPIds(String.join(",", perms));
+        roleService.updateById(yzmR);
 
         //删除成功之后 清除缓存
         DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-        SimpleShiroRealm shiroRealm = (SimpleShiroRealm) securityManager.getRealms().iterator().next();
-        //shiroRealm.clearAllCache();
-        //删除当前登录用户的授权缓存
-        //shiroRealm.getAuthorizationCache().remove(SecurityUtils.getSubject().getPrincipals());
-        shiroRealm.clearCachedAuthorizationInfo(SecurityUtils.getSubject().getPrincipals());
-        return "删除admin用户 admin:delete 权限成功";
+        MyShiroRealm shiroRealm = (MyShiroRealm) securityManager.getRealms().iterator().next();
+
+        shiroRealm.getAuthorizationCache().remove(new SimplePrincipalCollection(username, shiroRealm.getName()));
+        return "删除 user:delete 权限成功";
     }
+
 
 }

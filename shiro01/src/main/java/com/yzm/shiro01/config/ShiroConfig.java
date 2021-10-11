@@ -29,16 +29,16 @@ public class ShiroConfig {
      * 用户realm
      */
     @Bean(name = "simpleRealm")
-    public SimpleShiroRealm simpleShiroRealm() {
-        SimpleShiroRealm simpleShiroRealm = new SimpleShiroRealm(userService, roleService, permissionsService);
+    public MyShiroRealm simpleShiroRealm() {
+        MyShiroRealm myShiroRealm = new MyShiroRealm(userService, roleService, permissionsService);
         // 凭证匹配器 密码加密解密
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
         //true加密用的hex编码，false用的base64编码;默认true
         //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
-        simpleShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher);
-        return simpleShiroRealm;
+        myShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher);
+        return myShiroRealm;
     }
 
     /**

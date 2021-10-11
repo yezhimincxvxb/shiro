@@ -24,6 +24,7 @@
         <module>shiro03</module>
         <module>shiro04</module>
         <module>shiro05</module>
+        <module>shiro06</module>
     </modules>
 
     <properties>

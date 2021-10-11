@@ -11,7 +11,6 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.util.ByteSource;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -88,7 +87,7 @@ public class SimpleShiroRealm extends AuthorizingRealm {
         }
 
         return new SimpleAuthenticationInfo(
-                user.getUsername(), user.getPassword(), ByteSource.Util.bytes(user.getCredentialsSalt()), getName()
+                user.getUsername(), user.getPassword(), new MySimpleByteSource(user.getCredentialsSalt()), getName()
         );
     }
 
@@ -112,27 +111,4 @@ public class SimpleShiroRealm extends AuthorizingRealm {
     public void clearCache(PrincipalCollection principals) {
         super.clearCache(principals);
     }
-
-    /**
-     * 自定义方法：清除所有 授权缓存
-     */
-    public void clearAllCachedAuthorizationInfo() {
-        super.getAuthorizationCache().clear();
-    }
-
-    /**
-     * 自定义方法：清除所有 认证缓存
-     */
-    public void clearAllCachedAuthenticationInfo() {
-        super.getAuthenticationCache().clear();
-    }
-
-    /**
-     * 自定义方法：清除所有的  认证缓存  和 授权缓存
-     */
-    public void clearAllCache() {
-        clearAllCachedAuthenticationInfo();
-        clearAllCachedAuthorizationInfo();
-    }
-
 }
