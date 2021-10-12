@@ -104,7 +104,7 @@ public class ShiroConfig {
         redisCacheManager.setRedisManager(redisManager());
         // redis中针对不同用户缓存
         redisCacheManager.setPrincipalIdFieldName("username");
-        // 用户权限信息缓存时间 3分钟
+        // 用户认证权限信息缓存时间 3分钟
         redisCacheManager.setExpire(200);
         return redisCacheManager;
     }
@@ -140,11 +140,9 @@ public class ShiroConfig {
         redisSessionDAO.setExpire(300);
 
 //        EnterpriseCacheSessionDAO enterpriseCacheSessionDAO = new EnterpriseCacheSessionDAO();
-//        // redisCacheManager
 //        enterpriseCacheSessionDAO.setCacheManager(redisCacheManager());
 //        // 设置session缓存的名字 默认为 shiro-activeSessionCache
 //        enterpriseCacheSessionDAO.setActiveSessionsCacheName("shiro-activeSessionCache");
-//        // sessionId生成器
 //        enterpriseCacheSessionDAO.setSessionIdGenerator(sessionIdGenerator());
         return redisSessionDAO;
     }
@@ -175,16 +173,15 @@ public class ShiroConfig {
         sessionManager.setSessionIdCookieEnabled(true);
         sessionManager.setSessionIdCookie(sessionIdCookie());
 
-        sessionManager.setCacheManager(redisCacheManager());
+        //sessionManager.setCacheManager(redisCacheManager());
         sessionManager.setSessionDAO(sessionDAO());
 
         //如果用户如果不点注销，直接关闭浏览器，不能够进行session的清空处理，所以为了防止这样的问题，还需要增加有一个会话的验证调度。
-        //全局会话超时时间（单位毫秒），默认30分钟  暂时设置为1分钟 用来测试
+        //全局会话超时时间（单位毫秒），默认30分钟  暂时设置为120秒 用来测试
         sessionManager.setGlobalSessionTimeout(120 * 1000L);
-
         //定时调度器进行检测过期session 默认为true
         sessionManager.setSessionValidationSchedulerEnabled(true);
-        //设置session失效的扫描时间, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时 暂时设置为 2分钟 用来测试
+        //设置session失效的扫描时间, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时 暂时设置为 150秒 用来测试
         sessionManager.setSessionValidationInterval(150 * 1000L);
         //删除无效的session对象  默认为true
         sessionManager.setDeleteInvalidSessions(true);
