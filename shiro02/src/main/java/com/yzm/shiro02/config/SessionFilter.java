@@ -29,8 +29,7 @@ public class SessionFilter extends OncePerRequestFilter {
                     String username = (String) subject.getPrincipal();
                     session.setAttribute("username", username);
                     //设置会话的过期时间--ms,默认是30分钟，设置负数表示永不过期
-                    //session.setTimeout(-1L);
-                    session.setTimeout(5 * 60 * 1000L);
+                    session.setTimeout(-1L);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

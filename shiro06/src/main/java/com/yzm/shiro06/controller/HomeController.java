@@ -1,13 +1,17 @@
-package com.yzm.shiro01.controller;
+package com.yzm.shiro06.controller;
 
 import com.yzm.common.entity.HttpResult;
-import com.yzm.shiro01.entity.User;
-import com.yzm.shiro01.service.UserService;
-import com.yzm.shiro01.utils.EncryptUtils;
+import com.yzm.shiro06.config.MySessionListener;
+import com.yzm.shiro06.entity.User;
+import com.yzm.shiro06.service.UserService;
+import com.yzm.shiro06.utils.EncryptUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresGuest;
+import org.apache.shiro.authz.annotation.RequiresUser;
 import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +19,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 @Controller
 public class HomeController {
 
     private final UserService userService;
+    private final MySessionListener sessionListener;
 
-    public HomeController(UserService userService) {
+    public HomeController(UserService userService, MySessionListener sessionListener) {
         this.userService = userService;
+        this.sessionListener = sessionListener;
     }
 
     @GetMapping("login")
@@ -34,9 +44,9 @@ public class HomeController {
         return "home";
     }
 
-    @GetMapping("401")
+    @GetMapping("403")
     public Object notRole() {
-        return "401";
+        return "403";
     }
 
     @PostMapping("register")
@@ -45,7 +55,6 @@ public class HomeController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
-        // 密码加密
         EncryptUtils.encryptPassword(user);
         userService.save(user);
         return HttpResult.ok();
@@ -65,6 +74,42 @@ public class HomeController {
             return HttpResult.error("username error!");
         }
         return HttpResult.ok();
+    }
+
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() || subject.isRemembered()) {
+            subject.logout();
+        }
+        response.sendRedirect(request.getContextPath() + "/login");
+    }
+
+    @GetMapping("hello")
+    @RequiresGuest //登录状态不能访问
+    @ResponseBody
+    public Object hello() {
+        return "hello";
+    }
+
+    @GetMapping("list")
+    @RequiresUser
+    @ResponseBody
+    public Object userList() {
+        return userService.list();
+    }
+
+    @GetMapping("list2")
+    @RequiresAuthentication
+    @ResponseBody
+    public Object userList2() {
+        return userService.list();
+    }
+
+    @GetMapping("count")
+    @ResponseBody
+    public Object sessionCount() {
+        return sessionListener.getSessionCount().get();
     }
 
 }

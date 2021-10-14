@@ -1,11 +1,11 @@
-package com.yzm.shiro01.config;
+package com.yzm.shiro03.config;
 
-import com.yzm.shiro01.entity.Permissions;
-import com.yzm.shiro01.entity.Role;
-import com.yzm.shiro01.entity.User;
-import com.yzm.shiro01.service.PermissionsService;
-import com.yzm.shiro01.service.RoleService;
-import com.yzm.shiro01.service.UserService;
+import com.yzm.shiro03.entity.Permissions;
+import com.yzm.shiro03.entity.Role;
+import com.yzm.shiro03.entity.User;
+import com.yzm.shiro03.service.PermissionsService;
+import com.yzm.shiro03.service.RoleService;
+import com.yzm.shiro03.service.UserService;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;

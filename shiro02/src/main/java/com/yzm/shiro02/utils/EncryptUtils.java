@@ -21,7 +21,11 @@ public class EncryptUtils {
         // 随机字符串作为salt因子，实际参与运算的salt我们还引入其它干扰因子
         user.setSalt(randomNumberGenerator.nextBytes().toHex());
         user.setPassword(new SimpleHash(
-                ALGORITHM_NAME, user.getPassword(), ByteSource.Util.bytes(user.getCredentialsSalt()), HASH_ITERATIONS
+                ALGORITHM_NAME,
+                user.getPassword(),
+                // 用户名 + 盐
+                ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
+                HASH_ITERATIONS
         ).toHex());
     }
 

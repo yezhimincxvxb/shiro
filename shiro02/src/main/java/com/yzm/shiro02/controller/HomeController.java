@@ -55,6 +55,7 @@ public class HomeController {
     public Object doLogin(@RequestParam String username, @RequestParam String password, boolean rememberMe) {
         try {
             UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
+            // 记住我
             if (rememberMe) usernamePasswordToken.setRememberMe(true);
             Subject subject = SecurityUtils.getSubject();
             subject.login(usernamePasswordToken);

@@ -19,13 +19,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SimpleShiroRealm extends AuthorizingRealm {
+/**
+ * 自定义realm
+ * 实现身份认证和权限授权
+ */
+public class MyShiroRealm extends AuthorizingRealm {
 
     private final UserService userService;
     private final RoleService roleService;
     private final PermissionsService permissionsService;
 
-    public SimpleShiroRealm(UserService userService, RoleService roleService, PermissionsService permissionsService) {
+    public MyShiroRealm(UserService userService, RoleService roleService, PermissionsService permissionsService) {
         this.userService = userService;
         this.roleService = roleService;
         this.permissionsService = permissionsService;
@@ -38,18 +42,17 @@ public class SimpleShiroRealm extends AuthorizingRealm {
 
     /**
      * 角色授权
-     *
-     * @param principalCollection
-     * @return
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         String username = (String) principalCollection.getPrimaryPrincipal();
+        // 查询用户，获取角色ids
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();
         List<Integer> roleIds = Arrays.stream(user.getRIds().split(","))
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
 
+        // 查询角色，获取角色名、权限ids
         List<Role> roles = roleService.listByIds(roleIds);
         Set<String> roleNames = new HashSet<>(roles.size());
         Set<Integer> permIds = new HashSet<>();
@@ -60,6 +63,7 @@ public class SimpleShiroRealm extends AuthorizingRealm {
             permIds.addAll(collect);
         });
 
+        // 获取权限名称
         List<Permissions> permissions = permissionsService.listByIds(permIds);
         List<String> permNames = permissions.stream().map(Permissions::getPName).collect(Collectors.toList());
 
@@ -71,24 +75,28 @@ public class SimpleShiroRealm extends AuthorizingRealm {
 
     /**
      * 登陆认证
-     *
-     * @param authenticationToken
-     * @return
-     * @throws AuthenticationException
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        // 获取用户名跟密码
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         String username = usernamePasswordToken.getUsername();
+        // 也可以这样获取
         //String username = (String) authenticationToken.getPrincipal();
         //String password = new String((char[]) authenticationToken.getCredentials());
+
+        // 查询用户是否存在
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();
         if (user == null) {
             throw new UnknownAccountException();
         }
 
         return new SimpleAuthenticationInfo(
-                user.getUsername(), user.getPassword(), ByteSource.Util.bytes(user.getCredentialsSalt()), getName()
+                user.getUsername(),
+                user.getPassword(),
+                // 用户名 + 盐
+                ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
+                getName()
         );
     }
 }

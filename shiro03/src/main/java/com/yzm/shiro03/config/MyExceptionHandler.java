@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 @Slf4j
 //@RestControllerAdvice
-public class ShiroExceptionHandler {
+public class MyExceptionHandler {
 
     @ExceptionHandler
     public String ErrorHandler(AuthorizationException e) {

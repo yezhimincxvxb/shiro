@@ -1,6 +1,6 @@
-package com.yzm.shiro01.utils;
+package com.yzm.shiro06.utils;
 
-import com.yzm.shiro01.entity.User;
+import com.yzm.shiro06.entity.User;
 import org.apache.shiro.crypto.RandomNumberGenerator;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -21,11 +21,7 @@ public class EncryptUtils {
         // 随机字符串作为salt因子，实际参与运算的salt我们还引入其它干扰因子
         user.setSalt(randomNumberGenerator.nextBytes().toHex());
         user.setPassword(new SimpleHash(
-                ALGORITHM_NAME,
-                user.getPassword(),
-                // 用户名 + 盐
-                ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
-                HASH_ITERATIONS
+                ALGORITHM_NAME, user.getPassword(), ByteSource.Util.bytes(user.getCredentialsSalt()), HASH_ITERATIONS
         ).toHex());
     }
 

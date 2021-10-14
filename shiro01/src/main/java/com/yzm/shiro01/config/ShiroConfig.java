@@ -7,10 +7,12 @@ import com.yzm.shiro01.utils.EncryptUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Configuration
 public class ShiroConfig {
@@ -26,18 +28,25 @@ public class ShiroConfig {
     }
 
     /**
-     * 用户realm
+     * 凭证匹配器
      */
-    @Bean(name = "simpleRealm")
-    public MyShiroRealm simpleShiroRealm() {
-        MyShiroRealm myShiroRealm = new MyShiroRealm(userService, roleService, permissionsService);
-        // 凭证匹配器 密码加密解密
+    @Bean
+    public HashedCredentialsMatcher hashedCredentialsMatcher() {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
-        //true加密用的hex编码，false用的base64编码;默认true
+        //true加密用的hex编码，false用的base64编码;默认true，本实例是toHex，可以查看EncryptUtils
         //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
-        myShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher);
+        return hashedCredentialsMatcher;
+    }
+
+    /**
+     * 用户realm
+     */
+    @Bean
+    public MyShiroRealm simpleShiroRealm() {
+        MyShiroRealm myShiroRealm = new MyShiroRealm(userService, roleService, permissionsService);
+        myShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher());
         return myShiroRealm;
     }
 
@@ -52,40 +61,6 @@ public class ShiroConfig {
         return securityManager;
     }
 
-    /**
-     * 通过配置方式控制访问url
-     */
-    @Bean
-    public DefaultShiroFilterChainDefinition definition() {
-        DefaultShiroFilterChainDefinition definition = new DefaultShiroFilterChainDefinition();
-        //拦截器anon，无参数，表示匿名访问
-        definition.addPathDefinition("/home", "anon");
-        definition.addPathDefinition("/login", "anon");
-        definition.addPathDefinition("/401", "anon");
-        definition.addPathDefinition("/register", "anon");
-        definition.addPathDefinition("/doLogin", "anon");
-        definition.addPathDefinition("/logout", "logout");
-        //definition.addPathDefinition("/user/**", "roles[USER]");
-        //拦截器perms表示需要拥有对应的权限才可以访问
-        definition.addPathDefinition("/user/select", "perms[user:select]");
-        definition.addPathDefinition("/user/create", "perms[user:create]");
-        definition.addPathDefinition("/user/update", "perms[user:update]");
-        definition.addPathDefinition("/user/delete", "perms[user:delete]");
-        //拦截器perms[perms1,perms2]可以有多个参数，用逗号隔开，表示需要同时拥有多个权限，缺少其中一个都会被拒绝访问
-        definition.addPathDefinition("/user/createAndUpdate", "perms[user:create,user:update]");
-        //拦截器roles表示需要拥有对应的角色才可以访问，跟perms一样可以拥有多个参数
-        //由于url的定义是从上到下的，上面的定义高于下面的，比如把"/user/**"这行放到"/logout"下面，那么user角色没有对应的权限，依然可以访问上面的权限url
-        definition.addPathDefinition("/user/**", "roles[USER]");
-        //同一url可以有多个拦截器
-        definition.addPathDefinition("/admin/select", "roles[ADMIN],perms[admin:select]");
-        definition.addPathDefinition("/admin/create", "perms[admin:create]");
-        definition.addPathDefinition("/admin/update", "perms[admin:update]");
-        definition.addPathDefinition("/admin/delete", "perms[admin:delete]");
-        definition.addPathDefinition("/admin/**", "roles[ADMIN]");
-        definition.addPathDefinition("/**", "authc");
-        return definition;
-    }
-
     @Bean
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
@@ -95,7 +70,36 @@ public class ShiroConfig {
         // 设置无权限时跳转的 url
         shiroFilterFactoryBean.setUnauthorizedUrl("/401");
 
-        shiroFilterFactoryBean.setFilterChainDefinitionMap(definition().getFilterChainMap());
+        Map<String, String> definitionMap = new LinkedHashMap<>();
+        definitionMap.put("/home", "anon");
+        definitionMap.put("/login", "anon");
+        definitionMap.put("/401", "anon");
+        definitionMap.put("/register", "anon");
+        definitionMap.put("/doLogin", "anon");
+        //使用shiro默认的退出
+        definitionMap.put("/logout", "logout");
+
+        //definition.put("/user/**", "roles[USER]");
+        //拦截器perms表示需要拥有对应的权限才可以访问
+        definitionMap.put("/user/select", "perms[user:select]");
+        definitionMap.put("/user/create", "perms[user:create]");
+        definitionMap.put("/user/update", "perms[user:update]");
+        definitionMap.put("/user/delete", "perms[user:delete]");
+        //拦截器perms[perms1,perms2]可以有多个参数，用逗号隔开，表示需要同时拥有多个权限，缺少其中一个都会被拒绝访问
+        definitionMap.put("/user/createAndUpdate", "perms[user:create,user:update]");
+        //拦截器roles表示需要拥有对应的角色才可以访问，跟perms一样可以拥有多个参数
+        //由于url的定义是从上到下的，上面的定义高于下面的，比如把"/user/**"这行放到"/logout"下面，那么user角色没有对应的权限，依然可以访问上面的权限url
+        definitionMap.put("/user/**", "roles[USER]");
+
+        //同一url可以有多个拦截器
+        definitionMap.put("/admin/select", "roles[ADMIN],perms[admin:select]");
+        definitionMap.put("/admin/create", "perms[admin:create]");
+        definitionMap.put("/admin/update", "perms[admin:update]");
+        definitionMap.put("/admin/delete", "perms[admin:delete]");
+        definitionMap.put("/admin/**", "roles[ADMIN]");
+        definitionMap.put("/**", "authc");
+
+        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 

@@ -23,6 +23,13 @@ public class HttpUtils {
     }
 
     /**
+     * 获取HttpServletResponse对象
+     */
+    public static HttpServletResponse getHttpServletResponse() {
+        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
+    }
+
+    /**
      * 输出信息到浏览器
      */
     public static void successWrite(HttpServletResponse response, Object data) throws IOException {

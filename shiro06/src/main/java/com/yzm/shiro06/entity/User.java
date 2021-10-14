@@ -1,4 +1,4 @@
-package com.yzm.shiro01.entity;
+package com.yzm.shiro06.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -16,7 +16,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author Yzm
- * @since 2021-10-07
+ * @since 2021-10-09
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -25,7 +25,6 @@ import java.io.Serializable;
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
@@ -47,4 +46,7 @@ public class User implements Serializable {
     @TableField("r_ids")
     private String rIds;
 
+    public String getCredentialsSalt() {
+        return username + salt;
+    }
 }
