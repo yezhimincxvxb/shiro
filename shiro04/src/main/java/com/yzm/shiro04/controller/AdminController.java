@@ -1,6 +1,6 @@
 package com.yzm.shiro04.controller;
 
-import com.yzm.shiro04.config.SimpleShiroRealm;
+import com.yzm.shiro04.config.MyShiroRealm;
 import com.yzm.shiro04.entity.Role;
 import com.yzm.shiro04.entity.User;
 import com.yzm.shiro04.service.RoleService;
@@ -77,7 +77,7 @@ public class AdminController {
 
         // 添加成功之后 清除缓存
         DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-        SimpleShiroRealm shiroRealm = (SimpleShiroRealm) securityManager.getRealms().iterator().next();
+        MyShiroRealm shiroRealm = (MyShiroRealm) securityManager.getRealms().iterator().next();
         // 删除指定用户的权限缓存
         SimplePrincipalCollection collection = new SimplePrincipalCollection(username, shiroRealm.getName());
         shiroRealm.getAuthorizationCache().remove(collection);
@@ -106,7 +106,7 @@ public class AdminController {
 
         //删除成功之后 清除缓存
         DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-        SimpleShiroRealm shiroRealm = (SimpleShiroRealm) securityManager.getRealms().iterator().next();
+        MyShiroRealm shiroRealm = (MyShiroRealm) securityManager.getRealms().iterator().next();
 
         shiroRealm.getAuthorizationCache().remove(new SimplePrincipalCollection(username, shiroRealm.getName()));
         return "删除 user:delete 权限成功";
