@@ -14,7 +14,7 @@ public class MySessionListener implements SessionListener {
      * 统计在线人数
      * 线程安全自增
      */
-    private final AtomicInteger sessionCount = new AtomicInteger(0);
+    private final static AtomicInteger sessionCount = new AtomicInteger(0);
 
     /**
      * 会话创建时触发
@@ -46,7 +46,7 @@ public class MySessionListener implements SessionListener {
     /**
      * 获取在线人数使用
      */
-    public AtomicInteger getSessionCount() {
+    public static AtomicInteger getSessionCount() {
         return sessionCount;
     }
 

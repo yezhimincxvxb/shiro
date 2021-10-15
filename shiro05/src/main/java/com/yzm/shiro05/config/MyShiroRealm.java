@@ -37,10 +37,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 角色授权
-     *
-     * @param principalCollection
-     * @return
+     * 授权
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
@@ -70,25 +67,22 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 登陆认证
-     *
-     * @param authenticationToken
-     * @return
-     * @throws AuthenticationException
+     * 认证
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         String username = usernamePasswordToken.getUsername();
-        //String username = (String) authenticationToken.getPrincipal();
-        //String password = new String((char[]) authenticationToken.getCredentials());
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();
         if (user == null) {
             throw new UnknownAccountException();
         }
 
         return new SimpleAuthenticationInfo(
-                user.getUsername(), user.getPassword(), new MySimpleByteSource(user.getCredentialsSalt()), getName()
+                user.getUsername(),
+                user.getPassword(),
+                new MySimpleByteSource(user.getUsername() + user.getSalt()),
+                getName()
         );
     }
 

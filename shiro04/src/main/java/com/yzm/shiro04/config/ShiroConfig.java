@@ -22,8 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -170,9 +168,9 @@ public class ShiroConfig {
         // 设置无权限时跳转的 url
         shiroFilterFactoryBean.setUnauthorizedUrl("/401");
 
-        Map<String, String> definitionMap = new LinkedHashMap<>();
-        definitionMap.put("/home", "anon");
-        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
+//        Map<String, String> definitionMap = new LinkedHashMap<>();
+//        definitionMap.put("/home", "anon");
+//        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 
