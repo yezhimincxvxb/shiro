@@ -45,8 +45,4 @@ public class User implements Serializable {
 
     @TableField("r_ids")
     private String rIds;
-
-    public String getCredentialsSalt() {
-        return username + salt;
-    }
 }

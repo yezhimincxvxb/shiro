@@ -41,7 +41,8 @@ public class KickOutSessionControlFilter extends AccessControlFilter {
 
     public KickOutSessionControlFilter(SessionManager sessionManager, CacheManager cacheManager) {
         this.sessionManager = sessionManager;
-        this.cache = cacheManager.getCache("session");
+        // 缓存前缀：shiro:cache:active-session:
+        this.cache = cacheManager.getCache("active-session");
     }
 
     @Override

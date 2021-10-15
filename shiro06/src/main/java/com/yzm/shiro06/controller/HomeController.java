@@ -27,11 +27,9 @@ import java.io.IOException;
 public class HomeController {
 
     private final UserService userService;
-    private final MySessionListener sessionListener;
 
-    public HomeController(UserService userService, MySessionListener sessionListener) {
+    public HomeController(UserService userService) {
         this.userService = userService;
-        this.sessionListener = sessionListener;
     }
 
     @GetMapping("login")
@@ -44,9 +42,9 @@ public class HomeController {
         return "home";
     }
 
-    @GetMapping("403")
+    @GetMapping("401")
     public Object notRole() {
-        return "403";
+        return "401";
     }
 
     @PostMapping("register")
@@ -109,7 +107,7 @@ public class HomeController {
     @GetMapping("count")
     @ResponseBody
     public Object sessionCount() {
-        return sessionListener.getSessionCount().get();
+        return MySessionListener.getSessionCount().get();
     }
 
 }

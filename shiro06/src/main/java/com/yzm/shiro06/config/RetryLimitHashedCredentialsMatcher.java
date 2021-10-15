@@ -26,6 +26,9 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
         this.timeCache = cacheManager.getCache("timeCache");
     }
 
+    /**
+     * 重写密码校验
+     */
     @Override
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
         String username = (String) token.getPrincipal();
