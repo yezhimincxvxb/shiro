@@ -92,6 +92,13 @@ public class HomeController {
         response.sendRedirect(request.getContextPath() + "/login");
     }
 
+    @GetMapping("/fail")
+    @ResponseBody
+    public Object fail() {
+        int i = 1/0;
+        return "出错了";
+    }
+
     @GetMapping("hello")
     @RequiresGuest //登录状态不能访问
     @ResponseBody

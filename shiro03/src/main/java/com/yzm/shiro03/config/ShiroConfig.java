@@ -21,8 +21,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -93,6 +91,7 @@ public class ShiroConfig {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         // 配置单个realm
         securityManager.setRealm(shiroRealm());
+        // 记住我
         securityManager.setRememberMeManager(rememberMeManager());
         return securityManager;
     }
@@ -123,9 +122,9 @@ public class ShiroConfig {
         // 设置无权限时跳转的 url
         shiroFilterFactoryBean.setUnauthorizedUrl("/401");
 
-        Map<String, String> definitionMap = new LinkedHashMap<>();
-        definitionMap.put("/home", "anon");
-        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
+//        Map<String, String> definitionMap = new LinkedHashMap<>();
+//        definitionMap.put("/user/**", "roles[ADMIN]");
+//        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 
@@ -136,13 +135,14 @@ public class ShiroConfig {
      * 所以unauthorizedUrl设置后页面不跳转 Shiro注解模式下，登录失败与没有权限都是通过抛出异常。
      * 并且默认并没有去处理或者捕获这些异常。在SpringMVC下需要配置捕获相应异常来通知用户信息
      */
-    @Bean
+//    @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
-        //这里的 /unauthorized 是页面，不是访问的路径
+        // 登录后没有权限跳转到/401
         properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/401");
+        // 未登录访问接口跳转到/login
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }
@@ -153,10 +153,12 @@ public class ShiroConfig {
     @Bean
     public WebServerFactoryCustomizer<ConfigurableWebServerFactory> webServerFactoryCustomizer() {
         return factory -> {
-            ErrorPage error401Page = new ErrorPage(HttpStatus.UNAUTHORIZED, "/401");
+            //ErrorPage errorLoginPage = new ErrorPage(UnauthenticatedException.class, "/login");
+            //ErrorPage error401Page = new ErrorPage(UnauthorizedException.class, "/401");
+            ErrorPage error401Page2 = new ErrorPage(HttpStatus.UNAUTHORIZED, "/401");
             ErrorPage error404Page = new ErrorPage(HttpStatus.NOT_FOUND, "/404");
             ErrorPage error500Page = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500");
-            factory.addErrorPages(error401Page, error404Page, error500Page);
+            factory.addErrorPages(error401Page2, error404Page, error500Page);
         };
     }
 

@@ -2,7 +2,14 @@ package com.yzm.shiro03.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.UnauthenticatedException;
+import org.apache.shiro.authz.UnauthorizedException;
+import org.apache.shiro.web.util.WebUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 使用注解方式，访问没有权限的接口
@@ -14,9 +21,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class MyExceptionHandler {
 
     @ExceptionHandler
-    public String ErrorHandler(AuthorizationException e) {
-        log.error("没有访问权限！");
-        return "没有访问权限！";
+    public void ErrorHandler(AuthorizationException e, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.error("注解方式，自定义异常捕获");
+        if (e instanceof UnauthenticatedException) {
+            WebUtils.issueRedirect(request, response, "/login");
+        } else if (e instanceof UnauthorizedException) {
+            WebUtils.issueRedirect(request, response, "/401");
+        }
     }
 
 }

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("//user")
-@RequiresRoles("USER")
+@RequiresRoles(value = {"USER", "ADMIN"}, logical = Logical.OR)
 public class UserController {
 
     @GetMapping
