@@ -1,10 +1,10 @@
-package com.yzm.shiro06.config;
+package com.yzm.shiro07.config;
 
 
-import com.yzm.shiro06.service.PermissionsService;
-import com.yzm.shiro06.service.RoleService;
-import com.yzm.shiro06.service.UserService;
-import com.yzm.shiro06.utils.EncryptUtils;
+import com.yzm.shiro07.service.PermissionsService;
+import com.yzm.shiro07.service.RoleService;
+import com.yzm.shiro07.service.UserService;
+import com.yzm.shiro07.utils.EncryptUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
@@ -26,7 +26,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
+import javax.servlet.Filter;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -47,7 +50,7 @@ public class ShiroConfig {
      */
     @Bean
     public HashedCredentialsMatcher hashedCredentialsMatcher() {
-        HashedCredentialsMatcher hashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(redisCacheManager());
+        HashedCredentialsMatcher hashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(redisCacheManager(), sessionManager());
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
         //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
@@ -221,10 +224,16 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setLoginUrl("/login");
         shiroFilterFactoryBean.setUnauthorizedUrl("/401");
 
+        // 自定义拦截器
+        Map<String, Filter> filters = new LinkedHashMap<>();
+        filters.put("kickOut", new KickOutSessionControlFilter());
+        shiroFilterFactoryBean.setFilters(filters);
+
         // 拦截url
-//        Map<String, String> definitionMap = new LinkedHashMap<>();
-//        definitionMap.put("/**", "authc");
-//        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
+        Map<String, String> definitionMap = new LinkedHashMap<>();
+        definitionMap.put("/home", "anon");
+        definitionMap.put("/**", "kickOut");
+        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 

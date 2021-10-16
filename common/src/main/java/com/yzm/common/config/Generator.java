@@ -22,8 +22,8 @@ public class Generator {
     //需要生成实体类等基础信息的表名，多个用逗号隔开
     private static final String[] tables = {"user","role","permissions"};
     //生成文件指定在哪个目录下
-    private static final String baoPath = "com.yzm.shiro05";
-    private static final String module = "shiro05";
+    private static final String baoPath = "com.yzm.shiro01";
+    private static final String module = "shiro01";
     //数据源连接
     private static final String driverName = "com.mysql.cj.jdbc.Driver";
     private static final String url = "jdbc:mysql://localhost:3306/test3?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
