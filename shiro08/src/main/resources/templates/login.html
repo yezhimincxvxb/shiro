@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录页</title>
+</head>
+<body>
+<H1 th:if="${param.verify}">
+    验证码错误
+</H1>
+
+<h2>用户名密码登录</h2>
+<form action="doLogin" method="post">
+    <p>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Username">
+    </p>
+    <p>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+    </p>
+    <p>
+        <input type="text" class="form-control" name="verifyCode" required="required" placeholder="验证码">
+        <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>
+    </p>
+    <p>
+        <label>
+            <input type="checkbox" name="rememberMe">
+            Remember me on this computer.
+        </label>
+    </p>
+    <button type="submit">Sign in</button>
+</form>
+<script>
+    function refresh(obj) {
+        obj.src = "getVerifyCode?" + Math.random();
+    }
+
+    function mouseover(obj) {
+        obj.style.cursor = "pointer";
+    }
+</script>
+</body>
+</html>
