@@ -56,8 +56,6 @@ public class VerifyServlet extends HttpServlet {
      */
     private final int interLine = 12;
 
-
-
     /**
      * codeSequence 表示字符允许出现的序列值
      */
