@@ -153,7 +153,7 @@ public class ShiroConfig {
         //securityManager.setRealm(shiroRealm());
 
         // 验证器
-        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
+        ModularRealmAuthenticator authenticator = new MultiRealmAuthenticator();
         authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
         securityManager.setAuthenticator(authenticator);
 

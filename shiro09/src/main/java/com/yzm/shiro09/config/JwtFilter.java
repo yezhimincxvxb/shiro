@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -138,6 +140,21 @@ public class JwtFilter extends AuthenticatingFilter {
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
         log.info("token认证失败");
+        if (e instanceof IncorrectCredentialsException) {
+            log.error("刷新token");
+            JwtToken jwtToken = (JwtToken) token;
+            String tokenStr = jwtToken.getToken();
+            String username = JwtUtils.getUsernameFromToken(tokenStr);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put(JwtUtils.USERNAME, username);
+            String newToken = JwtUtils.generateToken(map);
+            HttpServletResponse httpResponse = WebUtils.toHttp(response);
+            httpResponse.setHeader("token", newToken);
+        }
+        if (e instanceof UnknownAccountException) {
+            log.error("账号异常");
+        }
         return false;
     }
 
