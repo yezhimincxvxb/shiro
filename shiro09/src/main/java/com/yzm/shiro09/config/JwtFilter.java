@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -94,8 +92,7 @@ public class JwtFilter extends AuthenticatingFilter {
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) {
         String jwtToken = JwtUtils.getTokenFromRequest(WebUtils.toHttp(request));
-        if (StringUtils.isNotBlank(jwtToken) && !JwtUtils.isExpired(jwtToken))
-            return new JwtToken(jwtToken);
+        if (StringUtils.isNotBlank(jwtToken)) return new JwtToken(jwtToken);
         return null;
     }
 
@@ -106,7 +103,7 @@ public class JwtFilter extends AuthenticatingFilter {
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
-        HttpResult result = new HttpResult(401, "抱歉，你未经授权", null);
+        HttpResult result = new HttpResult(500, "请求失败", null);
         response.getWriter().print(JSONObject.toJSONString(result, true));
         response.getWriter().flush();
         response.getWriter().close();
@@ -123,6 +120,7 @@ public class JwtFilter extends AuthenticatingFilter {
             JwtToken jwtToken = (JwtToken) token;
             String tokenStr = jwtToken.getToken();
             if (JwtUtils.isExpired(tokenStr)) {
+                log.info("刷新token");
                 String username = (String) subject.getPrincipal();
                 Map<String, Object> map = new HashMap<>();
                 map.put(JwtUtils.USERNAME, username);
@@ -140,23 +138,7 @@ public class JwtFilter extends AuthenticatingFilter {
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
         log.info("token认证失败");
-        if (e instanceof IncorrectCredentialsException) {
-            log.error("凭证错误，token过期");
-            JwtToken jwtToken = (JwtToken) token;
-            String tokenStr = jwtToken.getToken();
-            String username = JwtUtils.getUsernameFromToken(tokenStr);
-
-            Map<String, Object> map = new HashMap<>();
-            map.put(JwtUtils.USERNAME, username);
-            String newToken = JwtUtils.generateToken(map);
-            HttpServletResponse httpResponse = WebUtils.toHttp(response);
-            httpResponse.setHeader("token", newToken);
-        }
-        if (e instanceof UnknownAccountException) {
-            log.error("账号异常");
-        }
         return false;
     }
-
 
 }
