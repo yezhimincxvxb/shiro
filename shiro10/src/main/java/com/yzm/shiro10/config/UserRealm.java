@@ -32,6 +32,7 @@ public class UserRealm extends AuthorizingRealm {
     private final PermissionsService permissionsService;
 
     public UserRealm(UserService userService, RoleService roleService, PermissionsService permissionsService) {
+        // 设置Realm名称
         setName("UserRealm");
         this.userService = userService;
         this.roleService = roleService;

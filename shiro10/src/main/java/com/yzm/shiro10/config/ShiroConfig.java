@@ -82,6 +82,8 @@ public class ShiroConfig {
         securityManager.setAuthorizer(multiRealmAuthorizer);
 
         // 多个Realm
+        // 自定义realm 一定要放在securityManager.authorizer赋值之后（因为调用setRealms会将realms设置给authorizer，
+        // 并给各个Realm设置permissionResolver和rolePermissionResolver）
         securityManager.setRealms(Arrays.asList(userRealm(), adminRealm()));
         return securityManager;
     }
