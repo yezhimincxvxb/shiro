@@ -23,10 +23,17 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!-- redis -->
         <dependency>
             <groupId>org.crazycake</groupId>
             <artifactId>shiro-redis</artifactId>
             <version>3.2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- 可以解决会话调度验证会话失效无法循环执行的问题 -->

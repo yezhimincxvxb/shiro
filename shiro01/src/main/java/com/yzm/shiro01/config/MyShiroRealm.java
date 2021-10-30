@@ -20,8 +20,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义Realm
- * 实现认证和授权
+ * 自定义Realm，实现认证和授权
+ * AuthorizingRealm 继承 AuthorizingRealm
+ * AuthorizingRealm 提供 授权方法 doGetAuthorizationInfo
+ * AuthorizingRealm 提供 认证方法 doGetAuthenticationInfo
  */
 public class MyShiroRealm extends AuthorizingRealm {
 

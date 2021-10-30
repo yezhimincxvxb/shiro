@@ -51,7 +51,7 @@ public class HomeController {
     }
 
     @PostMapping("login")
-    public void doLogin(@RequestParam String username, @RequestParam String password, boolean rememberMe) {
+    public void login(@RequestParam String username, @RequestParam String password, boolean rememberMe) {
         // 1.创建UsernamePasswordToken
         UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
         if (rememberMe) usernamePasswordToken.setRememberMe(true);

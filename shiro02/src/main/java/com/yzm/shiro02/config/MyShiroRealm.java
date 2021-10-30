@@ -6,11 +6,13 @@ import com.yzm.shiro02.entity.User;
 import com.yzm.shiro02.service.PermissionsService;
 import com.yzm.shiro02.service.RoleService;
 import com.yzm.shiro02.service.UserService;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 
 import java.util.Arrays;
@@ -20,8 +22,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义realm
- * 实现身份认证和权限授权
+ * 自定义Realm，实现认证和授权
+ * AuthorizingRealm 继承 AuthorizingRealm
+ * AuthorizingRealm 提供 授权方法 doGetAuthorizationInfo
+ * AuthorizingRealm 提供 认证方法 doGetAuthenticationInfo
  */
 public class MyShiroRealm extends AuthorizingRealm {
 
@@ -41,7 +45,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 角色授权
+     * 授权
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
@@ -74,7 +78,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 登陆认证
+     * 认证
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
@@ -90,6 +94,10 @@ public class MyShiroRealm extends AuthorizingRealm {
         if (user == null) {
             throw new UnknownAccountException();
         }
+
+        // 在session存储数据
+        Subject subject = SecurityUtils.getSubject();
+        subject.getSession().setAttribute("username", username);
 
         return new SimpleAuthenticationInfo(
                 user.getUsername(),

@@ -21,8 +21,7 @@ public class SessionFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Subject subject = SecurityUtils.getSubject();
         //判断用户是通过记住我功能自动登录,此时session失效
-        //记住我的功能isAuthenticated肯定为false 而isRemembered肯定为true (因为短时间不用认证)
-        if (!subject.isAuthenticated() && subject.isRemembered()) {
+        if (subject.isRemembered()) {
             try {
                 Session session = subject.getSession();
                 if (session.getAttribute("username") == null) {
