@@ -1,6 +1,5 @@
 package com.yzm.shiro01.controller;
 
-import com.yzm.common.entity.HttpResult;
 import com.yzm.shiro01.entity.User;
 import com.yzm.shiro01.service.UserService;
 import com.yzm.shiro01.utils.EncryptUtils;
@@ -12,7 +11,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class HomeController {
@@ -26,7 +24,7 @@ public class HomeController {
     @GetMapping(value = {"/", "/home"})
     public String home(ModelMap map) {
         Subject subject = SecurityUtils.getSubject();
-        map.addAttribute("subject", subject);
+        map.addAttribute("subject", subject.getPrincipals());
         return "home";
     }
 
@@ -41,20 +39,19 @@ public class HomeController {
     }
 
     @PostMapping("register")
-    @ResponseBody
-    public Object register(@RequestParam String username, @RequestParam String password) {
+    public Object register(ModelMap map, @RequestParam String username, @RequestParam String password) {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
         // 密码加密
         EncryptUtils.encryptPassword(user);
         userService.save(user);
-        return HttpResult.ok();
+        map.addAttribute("user", user);
+        return "home";
     }
 
     @PostMapping("login")
     public void doLogin(@RequestParam String username, @RequestParam String password, boolean rememberMe) {
-//        try {
         // 1.创建UsernamePasswordToken
         UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
         if (rememberMe) usernamePasswordToken.setRememberMe(true);
@@ -62,12 +59,6 @@ public class HomeController {
         Subject subject = SecurityUtils.getSubject();
         // 3.前期准备后，开始登录
         subject.login(usernamePasswordToken);
-//        } catch (IncorrectCredentialsException ice) {
-//            return HttpResult.error("password error!");
-//        } catch (UnknownAccountException uae) {
-//            return HttpResult.error("username error!");
-//        }
-//        return HttpResult.ok();
     }
 
 }

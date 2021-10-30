@@ -71,8 +71,9 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setSuccessUrl("/home"); // 登录成功跳转url，默认“/”
         shiroFilterFactoryBean.setUnauthorizedUrl("/401"); // 访问无权限跳转url
 
+        // 修改拦截器
         Map<String, Filter> filters = new LinkedHashMap<>();
-        // 修改拦截器logout退出成功跳转url为"/login"，默认是"/"
+        // 修改logout退出成功跳转url为"/login"，默认是"/"
         LogoutFilter logoutFilter = new LogoutFilter();
         logoutFilter.setRedirectUrl("/login");
         filters.put("logout", logoutFilter);
@@ -88,19 +89,16 @@ public class ShiroConfig {
         definitionMap.put("/login", "authc");
         definitionMap.put("/logout", "logout");
 
-        //definition.put("/user/**", "roles[USER]");
-        //拦截器perms表示需要拥有对应的权限才可以访问
+        // 拦截器perms表示需要拥有对应的权限才可以访问
         definitionMap.put("/user/select", "perms[user:select]");
-        definitionMap.put("/user/create", "perms[user:create]");
-        definitionMap.put("/user/update", "perms[user:update]");
         definitionMap.put("/user/delete", "perms[user:delete]");
-        //拦截器perms[perms1,perms2]可以有多个参数，用逗号隔开，表示需要同时拥有多个权限，缺少其中一个都会被拒绝访问
+        // 拦截器perms[perms1,perms2]可以有多个参数，用逗号隔开，表示需要同时拥有多个权限，缺少其中一个都会被拒绝访问
         definitionMap.put("/user/createAndUpdate", "perms[user:create,user:update]");
-        //拦截器roles表示需要拥有对应的角色才可以访问，跟perms一样可以拥有多个参数
-        //由于url的定义是从上到下的，上面的定义高于下面的，比如把"/user/**"这行放到"/logout"下面，那么user角色没有对应的权限，依然可以访问上面的权限url
+        // 拦截器roles表示需要拥有对应的角色才可以访问，跟perms一样可以拥有多个参数
+        // 由于url的定义是从上到下的，上面的定义高于下面的，比如把"/user/**"这行放到"/logout"下面，那么user角色没有对应的权限，依然可以访问上面的权限url
         definitionMap.put("/user/**", "roles[USER]");
 
-        //同一url可以有多个拦截器
+        // 同一url可以有多个拦截器
         definitionMap.put("/admin/select", "roles[ADMIN],perms[admin:select]");
         definitionMap.put("/admin/create", "perms[admin:create]");
         definitionMap.put("/admin/update", "perms[admin:update]");

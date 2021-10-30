@@ -20,8 +20,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义realm
- * 实现身份认证和权限授权
+ * 自定义Realm
+ * 实现认证和授权
  */
 public class MyShiroRealm extends AuthorizingRealm {
 
@@ -41,7 +41,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 角色授权
+     * 授权
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
@@ -74,7 +74,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 登陆认证
+     * 认证
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {

@@ -5,9 +5,9 @@
     <title>首页</title>
 </head>
 <body>
-<h1>当前登录状态：<span th:text="${subject.getPrincipals() == null ?'未登录 ': '已登录'}"></span></h1>
+<h1>当前登录状态：<span th:text="${subject == null ? '未登录 ' : '已登录'}"></span></h1>
 
-<h2>1.注册</h2>
+<h2>1.注册 <span th:if="${user != null}"> [[${user.username}]] 成功</span></h2>
 <form action="/register" method="post">
     <p>
         <label for="username">Username</label>
@@ -25,7 +25,7 @@
     <button type="submit">Sign out</button>
 </form>
 
-<h3>User 接口列表</h3>
+<h3>3.User 接口列表</h3>
 <h4>
     <a href="/user">User角色</a>
 </h4>
@@ -35,7 +35,7 @@
 <p><a href="/user/delete">User角色,拥有 delete 权限</a></p>
 <p><a href="/user/createAndUpdate">User角色,拥有 create and update 权限</a></p>
 
-<h3>Admin 接口列表</h3>
+<h3>4.Admin 接口列表</h3>
 <h4>
     <a href="/admin">Admin角色</a>
 </h4>
