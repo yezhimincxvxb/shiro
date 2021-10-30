@@ -7,10 +7,12 @@ import com.yzm.shiro01.utils.EncryptUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.filter.authc.LogoutFilter;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.Filter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,7 +43,7 @@ public class ShiroConfig {
     }
 
     /**
-     * 用户realm
+     * 自定义Realm
      */
     @Bean
     public MyShiroRealm simpleShiroRealm() {
@@ -51,12 +53,12 @@ public class ShiroConfig {
     }
 
     /**
-     * 安全管理
+     * 安全管理SecurityManager
      */
     @Bean
     public SecurityManager securityManager() {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        // 配置单个realm
+        // 配置realm
         securityManager.setRealm(simpleShiroRealm());
         return securityManager;
     }
@@ -65,18 +67,25 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager());
-        // setLoginUrl 如果不设置值，默认会自动寻找Web工程根目录下的"/login.jsp"页面 或 "/login" 映射
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        // 设置无权限时跳转的 url
-        shiroFilterFactoryBean.setUnauthorizedUrl("/401");
+        shiroFilterFactoryBean.setLoginUrl("/login"); // 登录页url，默认会自动寻找Web工程根目录下的"/login.jsp"页面 或 "/login" 映射
+        shiroFilterFactoryBean.setSuccessUrl("/home"); // 登录成功跳转url，默认“/”
+        shiroFilterFactoryBean.setUnauthorizedUrl("/401"); // 访问无权限跳转url
+
+        Map<String, Filter> filters = new LinkedHashMap<>();
+        // 修改拦截器logout退出成功跳转url为"/login"，默认是"/"
+        LogoutFilter logoutFilter = new LogoutFilter();
+        logoutFilter.setRedirectUrl("/login");
+        filters.put("logout", logoutFilter);
+        // 重写登录失败处理
+        filters.put("authc", new LoginFormAuthenticationFilter());
+        shiroFilterFactoryBean.setFilters(filters);
 
         Map<String, String> definitionMap = new LinkedHashMap<>();
+        definitionMap.put("/", "anon");
         definitionMap.put("/home", "anon");
-        definitionMap.put("/login", "anon");
-        definitionMap.put("/401", "anon");
         definitionMap.put("/register", "anon");
-        definitionMap.put("/doLogin", "anon");
-        //使用shiro默认的退出
+        definitionMap.put("/401", "anon");
+        definitionMap.put("/login", "authc");
         definitionMap.put("/logout", "logout");
 
         //definition.put("/user/**", "roles[USER]");

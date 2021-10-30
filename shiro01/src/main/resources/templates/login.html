@@ -5,8 +5,10 @@
     <title>登录页</title>
 </head>
 <body>
+<h2 th:if="${param.failure}">You username or password is wrong</h2>
+
 <h2>用户名密码登录</h2>
-<form action="doLogin" method="post">
+<form action="login" method="post">
     <p>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" placeholder="Username">
