@@ -51,10 +51,9 @@ public class HomeController {
     }
 
     @PostMapping("login")
-    public void login(@RequestParam String username, @RequestParam String password, boolean rememberMe) {
+    public void login(@RequestParam String username, @RequestParam String password) {
         // 1.创建UsernamePasswordToken
         UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
-        if (rememberMe) usernamePasswordToken.setRememberMe(true);
         // 2.创建Subject 用户主体
         Subject subject = SecurityUtils.getSubject();
         // 3.前期准备后，开始登录

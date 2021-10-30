@@ -84,6 +84,7 @@ public class ShiroConfig {
         Map<String, String> definitionMap = new LinkedHashMap<>();
         definitionMap.put("/", "anon");
         definitionMap.put("/home", "anon");
+        definitionMap.put("/favicon.ico", "anon");
         definitionMap.put("/register", "anon");
         definitionMap.put("/401", "anon");
         definitionMap.put("/login", "authc");
