@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * 使用redis缓存，报错SimpleByteSource不可序列化
+ * 使用redis作为缓存，报错SimpleByteSource不可序列化
  */
 public class MySimpleByteSource implements ByteSource, Serializable {
     private static final long serialVersionUID = -5810132231246381206L;

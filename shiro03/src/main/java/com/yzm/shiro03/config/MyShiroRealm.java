@@ -20,8 +20,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义realm
- * 实现身份认证和权限授权
+ * 自定义Realm，实现认证和授权
+ * AuthorizingRealm 继承 AuthenticatingRealm
+ * AuthorizingRealm 提供 授权方法 doGetAuthorizationInfo
+ * AuthenticatingRealm 提供 认证方法 doGetAuthenticationInfo
  */
 public class MyShiroRealm extends AuthorizingRealm {
 
@@ -41,7 +43,7 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 角色授权
+     * 授权
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
@@ -74,16 +76,13 @@ public class MyShiroRealm extends AuthorizingRealm {
     }
 
     /**
-     * 登陆认证
+     * 认证
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         // 获取用户名跟密码
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         String username = usernamePasswordToken.getUsername();
-        // 也可以这样获取
-        //String username = (String) authenticationToken.getPrincipal();
-        //String password = new String((char[]) authenticationToken.getCredentials());
 
         // 查询用户是否存在
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();

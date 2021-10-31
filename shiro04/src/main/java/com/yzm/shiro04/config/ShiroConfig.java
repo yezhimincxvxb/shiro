@@ -45,18 +45,17 @@ public class ShiroConfig {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
-        //true加密用的hex编码，false用的base64编码;默认true，本实例是toHex，可以查看EncryptUtils
-        //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return hashedCredentialsMatcher;
     }
 
     /**
-     * 用户realm
+     * 自定义Realm
      */
     @Bean
     public MyShiroRealm simpleShiroRealm() {
         MyShiroRealm myShiroRealm = new MyShiroRealm(userService, roleService, permissionsService);
         myShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher());
+
         // 开启缓存
         myShiroRealm.setCachingEnabled(true);
         //启用身份验证缓存，即缓存AuthenticationInfo信息，默认false
@@ -71,31 +70,7 @@ public class ShiroConfig {
     }
 
     /**
-     * 记住我功能
-     */
-    @Bean
-    public Cookie simpleCookie() {
-        SimpleCookie cookie = new SimpleCookie("rememberMe");
-        //设为true后，只能通过http访问，javascript无法访问
-        //防止xss读取cookie
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        //存活时间，单位秒；-1表示关闭浏览器该cookie失效
-        cookie.setMaxAge(-1);
-        return cookie;
-    }
-
-    @Bean
-    public CookieRememberMeManager rememberMeManager() {
-        CookieRememberMeManager rememberMeManager = new CookieRememberMeManager();
-        rememberMeManager.setCookie(simpleCookie());
-        //cookie加密的密钥
-        //rememberMeManager.setCipherKey(Base64.decode("4AvVhmFLUs0KTA3Kprsdag=="));
-        return rememberMeManager;
-    }
-
-    /**
-     * ehcache缓存
+     * Ehcache缓存
      */
     @Bean
     public EhCacheManager ehCacheManager() {
@@ -105,7 +80,7 @@ public class ShiroConfig {
     }
 
     /**
-     * redis缓存
+     * Redis缓存
      */
     @Bean
     public RedisManager redisManager() {
@@ -128,22 +103,20 @@ public class ShiroConfig {
     }
 
     /**
-     * 安全管理
+     * 安全管理SecurityManager
      */
     @Bean
     public SecurityManager securityManager() {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         // 配置单个realm
         securityManager.setRealm(simpleShiroRealm());
-        // 记住我
-        securityManager.setRememberMeManager(rememberMeManager());
         // 缓存
-        securityManager.setCacheManager(redisCacheManager());
+        securityManager.setCacheManager(ehCacheManager());
         return securityManager;
     }
 
     /**
-     * 开启注解方式控制访问url
+     * 开启注解
      */
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
@@ -163,30 +136,21 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager());
-        // setLoginUrl 如果不设置值，默认会自动寻找Web工程根目录下的"/login.jsp"页面 或 "/login" 映射
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        // 设置无权限时跳转的 url
-        shiroFilterFactoryBean.setUnauthorizedUrl("/401");
-
-//        Map<String, String> definitionMap = new LinkedHashMap<>();
-//        definitionMap.put("/home", "anon");
-//        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 
     /**
-     * 解决： 无权限页面不跳转 shiroFilterFactoryBean.setUnauthorizedUrl("/401") 无效
-     * shiro的源代码ShiroFilterFactoryBean.Java定义的filter必须满足filter instanceof AuthorizationFilter，
-     * 只有perms，roles，ssl，rest，port才是属于AuthorizationFilter，而anon，authcBasic，auchc，user是AuthenticationFilter，
-     * 所以unauthorizedUrl设置后页面不跳转 Shiro注解模式下，登录失败与没有权限都是通过抛出异常。
-     * 并且默认并没有去处理或者捕获这些异常。在SpringMVC下需要配置捕获相应异常来通知用户信息
+     * 问题：未登录不会自动跳转到登录页、无权访问页面不跳转
+     * 原因：Shiro注解模式下，登录失败与没有权限都是通过抛出异常,并且默认并没有去处理或者捕获这些异常。
+     * 解决：通过在SpringMVC下配置捕获相应异常来通知用户信息
      */
     @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
+        // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
         properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }
