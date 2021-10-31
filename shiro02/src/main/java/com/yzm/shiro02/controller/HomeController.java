@@ -63,10 +63,4 @@ public class HomeController {
         subject.login(usernamePasswordToken);
     }
 
-    @GetMapping("/getUsername")
-    @ResponseBody
-        public Object getUsername() {
-            return "登录用户名:" + SecurityUtils.getSubject().getSession().getAttribute("username");
-        }
-
 }

@@ -106,13 +106,12 @@ public class ShiroConfig {
         filters.put("logout", logoutFilter);
         // 重写登录失败处理
         filters.put("authc", new LoginFormAuthenticationFilter());
-        // 添加SessionFilter
-        filters.put("session", new SessionFilter());
         shiroFilterFactoryBean.setFilters(filters);
 
         Map<String, String> definitionMap = new LinkedHashMap<>();
         definitionMap.put("/", "anon");
         definitionMap.put("/home", "anon");
+        definitionMap.put("/favicon.ico", "anon");
         definitionMap.put("/register", "anon");
         definitionMap.put("/401", "anon");
         definitionMap.put("/login", "authc");
@@ -134,11 +133,9 @@ public class ShiroConfig {
         definitionMap.put("/admin/delete", "perms[admin:delete]");
         definitionMap.put("/admin/**", "roles[ADMIN]");
 
-        // definitionMap.put("/**", "authc");
         // 将 authc 改成 user
-        //definitionMap.put("/**", "user");
-        // 添加session
-        definitionMap.put("/**", "session,user");
+        // definitionMap.put("/**", "authc");
+        definitionMap.put("/**", "user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
