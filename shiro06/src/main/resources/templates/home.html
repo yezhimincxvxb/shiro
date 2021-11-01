@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>首页</title>
 </head>
 <body>
-<h2>注册</h2>
+<h1>当前登录状态：<span th:text="${subject ?: '未登录 '}"></span></h1>
+<h2>当前在线人数：<span th:text="${count ?: '0'}"></span></h2>
+
+<h2>1.注册 <span th:if="${user != null}"> [[${user.username}]] 成功</span></h2>
 <form action="/register" method="post">
     <p>
         <label for="username">Username</label>
@@ -18,21 +21,12 @@
     <button type="submit">Register</button>
 </form>
 
-<h2>在线人数</h2>
-<p><a href="/count">获取在线登录人数</a></p>
+<h2>2.注销</h2>
+<form action="/logout" method="post">
+    <button type="submit">Sign out</button>
+</form>
 
-<h3>admin</h3>
-<h4>
-    <a href="/admin">Admin角色</a>
-</h4>
-<p><a href="/admin/select">Admin角色,拥有 select 权限</a></p>
-<p><a href="/admin/create">Admin角色,拥有 create 权限</a></p>
-<p><a href="/admin/update">Admin角色,拥有 update 权限</a></p>
-<p><a href="/admin/delete">Admin角色,拥有 delete 权限</a></p>
-<p><a href="/admin/addPermission">添加 delete 权限</a></p>
-<p><a href="/admin/delPermission">删除 delete 权限</a></p>
-
-<h3>user</h3>
+<h3>3.User 接口列表</h3>
 <h4>
     <a href="/user">User角色</a>
 </h4>
@@ -41,11 +35,17 @@
 <p><a href="/user/update">User角色,拥有 update 权限</a></p>
 <p><a href="/user/delete">User角色,拥有 delete 权限</a></p>
 <p><a href="/user/createAndUpdate">User角色,拥有 create and update 权限</a></p>
-<p><a href="/user/createOrUpdate">User角色,拥有 create or update 权限</a></p>
 
-<h3>记住我</h3>
-<p><a href="/list">用户列表</a></p>
-<p><a href="/list2">用户列表2</a></p>
+<h3>4.Admin 接口列表</h3>
+<h4>
+    <a href="/admin">Admin角色</a>
+</h4>
+<p><a href="/admin/select">Admin角色,拥有 select 权限</a></p>
+<p><a href="/admin/create">Admin角色,拥有 create 权限</a></p>
+<p><a href="/admin/update">Admin角色,拥有 update 权限</a></p>
+<p><a href="/admin/delete">Admin角色,拥有 delete 权限</a></p>
+<p><a href="/admin/addPermission">添加权限</a></p>
+<p><a href="/admin/delPermission">删除权限</a></p>
 
 </body>
 </html>

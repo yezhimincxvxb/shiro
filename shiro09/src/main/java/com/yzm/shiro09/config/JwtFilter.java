@@ -1,8 +1,6 @@
 package com.yzm.shiro09.config;
 
-import com.alibaba.fastjson.JSONObject;
-import com.yzm.common.entity.HttpResult;
-import com.yzm.shiro09.entity.JwtToken;
+import com.yzm.common.utils.HttpUtils;
 import com.yzm.shiro09.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +25,7 @@ import java.util.Map;
 public class JwtFilter extends AuthenticatingFilter {
 
     /**
-     * 跨域支持
-     * 前置处理
+     * 跨域支持 前置处理
      */
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
@@ -43,8 +40,7 @@ public class JwtFilter extends AuthenticatingFilter {
     }
 
     /**
-     * 跨域支持
-     * 后置处理
+     * 跨域支持 后置处理
      */
     @Override
     protected void postHandle(ServletRequest request, ServletResponse response) {
@@ -64,7 +60,7 @@ public class JwtFilter extends AuthenticatingFilter {
         try {
             allowed = executeLogin(request, response);
         } catch (IllegalStateException e) {
-            log.error("Not found any token");
+            log.error("Not found any token：" + WebUtils.toHttp(request).getRequestURI());
         } catch (Exception e) {
             log.error("Error occurs when login", e);
         }
@@ -103,12 +99,7 @@ public class JwtFilter extends AuthenticatingFilter {
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json; charset=utf-8");
-        HttpResult result = new HttpResult(500, "请求失败", null);
-        response.getWriter().print(JSONObject.toJSONString(result, true));
-        response.getWriter().flush();
-        response.getWriter().close();
+        HttpUtils.errorWrite((HttpServletResponse) response, "请求失败");
         return false;
     }
 
@@ -150,7 +141,7 @@ public class JwtFilter extends AuthenticatingFilter {
             map.put(JwtUtils.USERNAME, username);
             String newToken = JwtUtils.generateToken(map);
             HttpServletResponse httpResponse = WebUtils.toHttp(response);
-            httpResponse.setHeader("token", newToken);
+            httpResponse.setHeader("Authorization", newToken);
         }
         if (e instanceof UnknownAccountException) {
             log.error("账号异常");

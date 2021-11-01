@@ -1,4 +1,4 @@
-package com.yzm.shiro09.entity;
+package com.yzm.shiro09.config;
 
 import org.apache.shiro.authc.AuthenticationToken;
 

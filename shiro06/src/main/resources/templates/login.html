@@ -5,8 +5,7 @@
     <title>登录页</title>
 </head>
 <body>
-<h2>用户名密码登录</h2>
-<div th:if="${param.password}">
+<div th:if="${param.failure}">
     登录密码错误
 </div>
 
@@ -14,7 +13,8 @@
     登录锁定时间：[[${param.time}]] 秒
 </div>
 
-<form action="doLogin" method="post">
+<h2>用户名密码登录</h2>
+<form action="login" method="post">
     <p>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" placeholder="Username">

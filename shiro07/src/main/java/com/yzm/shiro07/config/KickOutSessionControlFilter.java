@@ -17,7 +17,7 @@ public class KickOutSessionControlFilter extends AccessControlFilter {
     /**
      * 踢出后跳转url
      */
-    private static final String kickOutUrl = "login?kickOut";
+    private static final String kickOutUrl = "/home?kickOut";
 
     public KickOutSessionControlFilter() {
     }

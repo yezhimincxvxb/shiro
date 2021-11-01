@@ -1,6 +1,5 @@
 package com.yzm.shiro09.config;
 
-import com.yzm.shiro09.entity.JwtToken;
 import com.yzm.shiro09.utils.JwtUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;

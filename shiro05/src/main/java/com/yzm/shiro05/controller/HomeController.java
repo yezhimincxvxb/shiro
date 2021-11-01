@@ -1,5 +1,6 @@
 package com.yzm.shiro05.controller;
 
+import com.yzm.shiro05.config.MySessionListener;
 import com.yzm.shiro05.entity.User;
 import com.yzm.shiro05.service.UserService;
 import com.yzm.shiro05.utils.EncryptUtils;
@@ -27,6 +28,7 @@ public class HomeController {
     public String home(ModelMap map) {
         Subject subject = SecurityUtils.getSubject();
         map.addAttribute("subject", subject.getPrincipals());
+        map.addAttribute("count", MySessionListener.getSessionCount().get());
         return "home";
     }
 

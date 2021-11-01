@@ -5,7 +5,8 @@
     <title>首页</title>
 </head>
 <body>
-<h1>当前登录状态：<span th:text="${subject == null ? '未登录 ' : '已登录'}"></span></h1>
+<h1>当前登录状态：<span th:text="${subject ?: '未登录 '}"></span></h1>
+<h2>当前在线人数：<span th:text="${count ?: '0'}"></span></h2>
 
 <h2>1.注册 <span th:if="${user != null}"> [[${user.username}]] 成功</span></h2>
 <form action="/register" method="post">

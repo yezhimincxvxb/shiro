@@ -6,6 +6,7 @@ import com.yzm.shiro08.service.RoleService;
 import com.yzm.shiro08.service.UserService;
 import com.yzm.shiro08.utils.EncryptUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -54,12 +55,11 @@ public class ShiroConfig {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
-        //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return hashedCredentialsMatcher;
     }
 
     /**
-     * 用户realm
+     * 自定义Realm
      */
     @Bean
     public MyShiroRealm simpleShiroRealm() {
@@ -88,12 +88,12 @@ public class ShiroConfig {
         CookieRememberMeManager rememberMeManager = new CookieRememberMeManager();
         rememberMeManager.setCookie(simpleCookie());
         //cookie加密的密钥
-        //rememberMeManager.setCipherKey(Base64.decode("4AvVhmFLUs0KTA3Kprsdag=="));
+        rememberMeManager.setCipherKey(Base64.decode("4AvVhmFLUs0KTA3Kprsdag=="));
         return rememberMeManager;
     }
 
     /**
-     * 安全管理
+     * 安全管理SecurityManager
      */
     @Bean
     public SecurityManager securityManager() {
@@ -105,7 +105,7 @@ public class ShiroConfig {
     }
 
     /**
-     * 开启注解方式控制访问url
+     * 开启注解
      */
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
@@ -125,8 +125,6 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager());
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        shiroFilterFactoryBean.setUnauthorizedUrl("/401");
 
         // 自定义拦截器
         Map<String, Filter> filters = new LinkedHashMap<>();
@@ -135,19 +133,24 @@ public class ShiroConfig {
 
         // 拦截url
         Map<String, String> definitionMap = new LinkedHashMap<>();
-        definitionMap.put("/home", "anon");
         definitionMap.put("/getVerifyCode", "anon");
-        definitionMap.put("/doLogin", "verify");
+        definitionMap.put("/login", "verify");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 
+    /**
+     * 问题：未登录不会自动跳转到登录页、无权访问页面不跳转
+     * 原因：Shiro注解模式下，登录失败与没有权限都是通过抛出异常,并且默认并没有去处理或者捕获这些异常。
+     * 解决：通过在SpringMVC下配置捕获相应异常来通知用户信息
+     */
     @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
+        // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "redirect:/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "redirect:/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }

@@ -18,24 +18,26 @@ public class VerifyFilter extends AccessControlFilter {
     }
 
     @Override
-    protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws Exception {
-        return false;
+    protected boolean isAccessAllowed(ServletRequest servletRequest, ServletResponse servletResponse, Object mappedValue) throws Exception {
+        HttpServletRequest request = WebUtils.toHttp(servletRequest);
+        if (request.getMethod().equals("POST")) {
+            //这个validateCode是在servlet中存入session的名字
+            String validateCode = (String) request.getSession().getAttribute("validateCode");
+            //获取用户输入的验证码
+            String inputVerify = request.getParameter("verifyCode");
+            log.info("用户输入：" + inputVerify);
+            if (!validateCode.equalsIgnoreCase(inputVerify)) {
+                WebUtils.issueRedirect(servletRequest, servletResponse, "login?verify");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
-        HttpServletRequest request = WebUtils.toHttp(servletRequest);
-        //这个validateCode是在servlet中存入session的名字
-        String validateCode = (String) request.getSession().getAttribute("validateCode");
-        //获取用户输入的验证码
-        String inputVerify = request.getParameter("verifyCode");
-        log.info("用户输入：" + inputVerify);
-        if (!validateCode.equalsIgnoreCase(inputVerify)) {
-            WebUtils.issueRedirect(servletRequest, servletResponse, "login?verify");
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
 }

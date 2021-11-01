@@ -6,11 +6,13 @@ import com.yzm.shiro09.entity.User;
 import com.yzm.shiro09.service.PermissionsService;
 import com.yzm.shiro09.service.RoleService;
 import com.yzm.shiro09.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,9 +21,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义realm
- * 实现身份认证和权限授权
+ * 自定义Realm，实现认证和授权
+ * AuthorizingRealm 继承 AuthenticatingRealm
+ * AuthorizingRealm 提供 授权方法 doGetAuthorizationInfo
+ * AuthenticatingRealm 提供 认证方法 doGetAuthenticationInfo
  */
+@Slf4j
 public class MyShiroRealm extends AuthorizingRealm {
 
     private final UserService userService;
@@ -44,6 +49,7 @@ public class MyShiroRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        log.info("授权");
         String username = (String) principalCollection.getPrimaryPrincipal();
         // 查询用户，获取角色ids
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();
@@ -77,12 +83,10 @@ public class MyShiroRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        log.info("认证");
         // 获取用户名跟密码
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         String username = usernamePasswordToken.getUsername();
-        // 也可以这样获取
-        //String username = (String) authenticationToken.getPrincipal();
-        //String password = new String((char[]) authenticationToken.getCredentials());
 
         // 查询用户是否存在
         User user = userService.lambdaQuery().eq(User::getUsername, username).one();
@@ -94,8 +98,9 @@ public class MyShiroRealm extends AuthorizingRealm {
                 user.getUsername(),
                 user.getPassword(),
                 // 用户名 + 盐
-                new MySimpleByteSource(user.getUsername() + user.getSalt()),
+                 ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
                 getName()
         );
     }
+
 }

@@ -73,10 +73,10 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
             return true;
         } else {
             try {
-                log.info("密码错误：" + token.getCredentials());
+                log.info("密码错误：" + new String((char[]) token.getCredentials()));
                 // 更新
                 limitCache.put(username, retryCount);
-                WebUtils.issueRedirect(HttpUtils.getHttpServletRequest(), HttpUtils.getHttpServletResponse(), "login?password");
+                WebUtils.issueRedirect(HttpUtils.getHttpServletRequest(), HttpUtils.getHttpServletResponse(), "login?failure");
             } catch (Exception e) {
                 //
             }
