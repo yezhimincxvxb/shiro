@@ -83,10 +83,8 @@ public class ShiroConfig {
     @Bean
     public SecurityManager securityManager() {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        // 配置单个realm
-        //securityManager.setRealm(shiroRealm());
 
-        // 验证器
+        // 验证器、认证策略
         ModularRealmAuthenticator authenticator = new MultiRealmAuthenticator();
         authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
         securityManager.setAuthenticator(authenticator);
@@ -129,6 +127,7 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setFilters(filters);
 
         Map<String, String> definitionMap = new LinkedHashMap<>();
+        // swagger放行
         definitionMap.put("/swagger**", "anon");
         definitionMap.put("/webjars/**", "anon");
         definitionMap.put("/swagger-resources/**", "anon");

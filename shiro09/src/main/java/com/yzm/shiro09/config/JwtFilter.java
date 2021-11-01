@@ -2,6 +2,7 @@ package com.yzm.shiro09.config;
 
 import com.yzm.common.utils.HttpUtils;
 import com.yzm.shiro09.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -52,13 +53,14 @@ public class JwtFilter extends AuthenticatingFilter {
     }
 
     /**
-     * 父类会在请求进入拦截器后调用该方法，返回true则继续，返回false则会调用onAccessDenied()。
+     * 请求进入拦截器后调用该方法，
+     * 返回true则继续，返回false则会调用onAccessDenied()。
      */
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
         boolean allowed = false;
         try {
-            allowed = executeLogin(request, response);
+            allowed = super.executeLogin(request, response);
         } catch (IllegalStateException e) {
             log.error("Not found any token：" + WebUtils.toHttp(request).getRequestURI());
         } catch (Exception e) {
@@ -67,25 +69,9 @@ public class JwtFilter extends AuthenticatingFilter {
         return allowed || super.isPermissive(mappedValue);
     }
 
-    @Override
-    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
-        AuthenticationToken token = this.createToken(request, response);
-        if (token == null) {
-            String msg = "createToken method implementation returned null. A valid non-null AuthenticationToken must be created in order to execute a login attempt.";
-            throw new IllegalStateException(msg);
-        } else {
-            try {
-                Subject subject = this.getSubject(request, response);
-                subject.login(token);
-                return this.onLoginSuccess(token, subject, request, response);
-            } catch (AuthenticationException var5) {
-                return this.onLoginFailure(token, var5, request, response);
-            }
-        }
-    }
-
     /**
-     * 这里重写了父类的方法，使用我们自己定义的Token类，提交给shiro。这个方法返回null的话会直接抛出异常，进入isAccessAllowed（）的异常处理逻辑。
+     * 这里重写了父类的方法，使用我们自己定义的Token类，提交给shiro。
+     * 这个方法返回null的话会直接抛出异常，进入isAccessAllowed（）的异常处理逻辑。
      */
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) {
@@ -95,7 +81,7 @@ public class JwtFilter extends AuthenticatingFilter {
     }
 
     /**
-     * 如果这个Filter在之前isAccessAllowed（）方法中返回false,则会进入这个方法。我们这里直接返回错误的response
+     * 拒绝处理
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
@@ -104,7 +90,8 @@ public class JwtFilter extends AuthenticatingFilter {
     }
 
     /**
-     * 如果Shiro Login认证成功，会进入该方法，等同于用户名密码登录成功，我们这里还判断了是否要刷新Token
+     * Login认证成功，会进入该方法
+     * 我们这里判断了是否要刷新Token，始终返回可用token
      */
     @Override
     protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
@@ -112,7 +99,10 @@ public class JwtFilter extends AuthenticatingFilter {
         if (token instanceof JwtToken) {
             JwtToken jwtToken = (JwtToken) token;
             String tokenStr = jwtToken.getToken();
-            if (JwtUtils.isExpired(tokenStr)) {
+            Claims claims = JwtUtils.verifyToken(tokenStr);
+            long expireTime = claims.getExpiration().getTime();
+            // 当前时间 + 刷新时间 >= 过期时间，则进行刷新token
+            if (System.currentTimeMillis() + JwtUtils.TOKEN_REFRESH_TIME >= expireTime) {
                 log.info("刷新token");
                 String username = (String) subject.getPrincipal();
                 Map<String, Object> map = new HashMap<>();
@@ -126,22 +116,13 @@ public class JwtFilter extends AuthenticatingFilter {
     }
 
     /**
-     * 如果调用shiro的login认证失败，会回调这个方法
+     * Login认证失败，会回调这个方法
      */
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
         log.info("token认证失败");
         if (e instanceof IncorrectCredentialsException) {
-            log.error("刷新token");
-            JwtToken jwtToken = (JwtToken) token;
-            String tokenStr = jwtToken.getToken();
-            String username = JwtUtils.getUsernameFromToken(tokenStr);
-
-            Map<String, Object> map = new HashMap<>();
-            map.put(JwtUtils.USERNAME, username);
-            String newToken = JwtUtils.generateToken(map);
-            HttpServletResponse httpResponse = WebUtils.toHttp(response);
-            httpResponse.setHeader("Authorization", newToken);
+            log.error("token过期，请重新登录");
         }
         if (e instanceof UnknownAccountException) {
             log.error("账号异常");

@@ -20,6 +20,8 @@ public class UserController {
     @ApiOperation(value = "user", notes = "详情")
     @GetMapping
     public Object user() {
+        // 当使用noSessionCreation时，这里就会报错
+        System.out.println("会话ID：" + SecurityUtils.getSubject().getSession().getId());
         return SecurityUtils.getSubject().getPrincipal();
     }
 
