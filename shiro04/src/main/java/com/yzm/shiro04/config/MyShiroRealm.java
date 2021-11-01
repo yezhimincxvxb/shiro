@@ -12,7 +12,6 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.util.ByteSource;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -98,7 +97,10 @@ public class MyShiroRealm extends AuthorizingRealm {
                 user.getUsername(),
                 user.getPassword(),
                 // 用户名 + 盐
-                ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
+                // 之前的方式
+                // ByteSource.Util.bytes(user.getUsername() + user.getSalt()),
+                // 使用redis缓存，需要SimpleByteSource实现序列化
+                new MySimpleByteSource(user.getUsername() + user.getSalt()),
                 getName()
         );
     }

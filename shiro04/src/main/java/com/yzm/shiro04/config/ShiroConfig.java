@@ -10,10 +10,7 @@ import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.servlet.Cookie;
-import org.apache.shiro.web.servlet.SimpleCookie;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
@@ -111,7 +108,7 @@ public class ShiroConfig {
         // 配置单个realm
         securityManager.setRealm(simpleShiroRealm());
         // 缓存
-        securityManager.setCacheManager(ehCacheManager());
+        securityManager.setCacheManager(redisCacheManager());
         return securityManager;
     }
 
@@ -149,8 +146,8 @@ public class ShiroConfig {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
         // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "redirect:/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "redirect:/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }

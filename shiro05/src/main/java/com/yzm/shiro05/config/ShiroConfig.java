@@ -5,6 +5,7 @@ import com.yzm.shiro05.service.PermissionsService;
 import com.yzm.shiro05.service.RoleService;
 import com.yzm.shiro05.service.UserService;
 import com.yzm.shiro05.utils.EncryptUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
@@ -12,16 +13,13 @@ import org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.servlet.Cookie;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -50,18 +48,17 @@ public class ShiroConfig {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         hashedCredentialsMatcher.setHashAlgorithmName(EncryptUtils.ALGORITHM_NAME);
         hashedCredentialsMatcher.setHashIterations(EncryptUtils.HASH_ITERATIONS);
-        //true加密用的hex编码，false用的base64编码;默认true，本实例是toHex，可以查看EncryptUtils
-        //hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return hashedCredentialsMatcher;
     }
 
     /**
-     * 用户realm
+     * 自定义Realm
      */
     @Bean
     public MyShiroRealm simpleShiroRealm() {
         MyShiroRealm myShiroRealm = new MyShiroRealm(userService, roleService, permissionsService);
         myShiroRealm.setCredentialsMatcher(hashedCredentialsMatcher());
+
         // 开启缓存
         myShiroRealm.setCachingEnabled(true);
         //启用身份验证缓存，即缓存AuthenticationInfo信息，默认false
@@ -73,30 +70,6 @@ public class ShiroConfig {
         //缓存AuthorizationInfo信息的缓存名称  在ehcache-shiro.xml中有对应缓存的配置
         myShiroRealm.setAuthorizationCacheName("authorizationCache");
         return myShiroRealm;
-    }
-
-    /**
-     * 记住我功能
-     */
-    @Bean
-    public Cookie simpleCookie() {
-        SimpleCookie cookie = new SimpleCookie("rememberMe");
-        //设为true后，只能通过http访问，javascript无法访问
-        //防止xss读取cookie
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        //存活时间，单位秒；-1表示关闭浏览器该cookie失效
-        cookie.setMaxAge(-1);
-        return cookie;
-    }
-
-    @Bean
-    public CookieRememberMeManager rememberMeManager() {
-        CookieRememberMeManager rememberMeManager = new CookieRememberMeManager();
-        rememberMeManager.setCookie(simpleCookie());
-        //cookie加密的密钥
-        //rememberMeManager.setCipherKey(Base64.decode("4AvVhmFLUs0KTA3Kprsdag=="));
-        return rememberMeManager;
     }
 
     /**
@@ -199,17 +172,17 @@ public class ShiroConfig {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         // 配置单个realm
         securityManager.setRealm(simpleShiroRealm());
-        // 记住我
-        securityManager.setRememberMeManager(rememberMeManager());
         // 缓存
         securityManager.setCacheManager(redisCacheManager());
         // session
         securityManager.setSessionManager(sessionManager());
+
+        SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
     }
 
     /**
-     * 开启注解方式控制访问url
+     * 开启注解
      */
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
@@ -229,42 +202,23 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager());
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        shiroFilterFactoryBean.setUnauthorizedUrl("/401");
-
-//        Map<String, String> definitionMap = new LinkedHashMap<>();
-//        definitionMap.put("/home", "anon");
-//        shiroFilterFactoryBean.setFilterChainDefinitionMap(definitionMap);
         return shiroFilterFactoryBean;
     }
 
     /**
-     * 解决： 无权限页面不跳转 shiroFilterFactoryBean.setUnauthorizedUrl("/403") 无效
-     * shiro的源代码ShiroFilterFactoryBean.Java定义的filter必须满足filter instanceof AuthorizationFilter，
-     * 只有perms，roles，ssl，rest，port才是属于AuthorizationFilter，而anon，authcBasic，auchc，user是AuthenticationFilter，
-     * 所以unauthorizedUrl设置后页面不跳转 Shiro注解模式下，登录失败与没有权限都是通过抛出异常。
-     * 并且默认并没有去处理或者捕获这些异常。在SpringMVC下需要配置捕获相应异常来通知用户信息
+     * 问题：未登录不会自动跳转到登录页、无权访问页面不跳转
+     * 原因：Shiro注解模式下，登录失败与没有权限都是通过抛出异常,并且默认并没有去处理或者捕获这些异常。
+     * 解决：通过在SpringMVC下配置捕获相应异常来通知用户信息
      */
     @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
+        // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "redirect:/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "redirect:/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
-    }
-
-    /**
-     * 让某个实例的某个方法的返回值注入为Bean的实例
-     */
-    @Bean
-    public MethodInvokingFactoryBean getMethodInvokingFactoryBean() {
-        MethodInvokingFactoryBean factoryBean = new MethodInvokingFactoryBean();
-        factoryBean.setStaticMethod("org.apache.shiro.SecurityUtils.setSecurityManager");
-        //factoryBean.setArguments(new Object[]{securityManager()});
-        factoryBean.setArguments(securityManager());
-        return factoryBean;
     }
 
 }

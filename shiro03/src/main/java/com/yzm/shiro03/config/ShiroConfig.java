@@ -9,7 +9,6 @@ import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.web.filter.authc.LogoutFilter;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.Cookie;
@@ -23,9 +22,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
-import javax.servlet.Filter;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -134,13 +130,13 @@ public class ShiroConfig {
      * 原因：Shiro注解模式下，登录失败与没有权限都是通过抛出异常,并且默认并没有去处理或者捕获这些异常。
      * 解决：通过在SpringMVC下配置捕获相应异常来通知用户信息
      */
-//    @Bean
+    @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
         // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "redirect:/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "redirect:/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }
@@ -148,11 +144,11 @@ public class ShiroConfig {
     /**
      * 自定义错误页面
      */
-//    @Bean
+    @Bean
     public WebServerFactoryCustomizer<ConfigurableWebServerFactory> webServerFactoryCustomizer() {
         return factory -> {
-            //ErrorPage errorLoginPage = new ErrorPage(UnauthenticatedException.class, "/login");
-            //ErrorPage error401Page = new ErrorPage(UnauthorizedException.class, "/401");
+//            ErrorPage errorLoginPage = new ErrorPage(UnauthenticatedException.class, "/login");
+//            ErrorPage error401Page = new ErrorPage(UnauthorizedException.class, "/401");
             ErrorPage error401Page2 = new ErrorPage(HttpStatus.UNAUTHORIZED, "/401");
             ErrorPage error404Page = new ErrorPage(HttpStatus.NOT_FOUND, "/404");
             ErrorPage error500Page = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500");

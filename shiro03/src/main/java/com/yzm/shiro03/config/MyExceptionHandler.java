@@ -6,7 +6,6 @@ import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +16,7 @@ import java.io.IOException;
  * 解决方式，通过自定义全局异常捕获处理
  */
 @Slf4j
-@RestControllerAdvice
+//@RestControllerAdvice
 public class MyExceptionHandler {
 
     @ExceptionHandler
