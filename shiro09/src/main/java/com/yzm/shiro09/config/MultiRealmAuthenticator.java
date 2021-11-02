@@ -12,6 +12,8 @@ import java.util.Collection;
 
 /**
  * 自定义认证器，解决 Shiro 异常无法返回的问题
+ * 父类使用Throwable捕获异常，并不往上抛出
+ * 这里改为AuthenticationException来接收异常，并往上抛出
  */
 @Slf4j
 public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
@@ -19,7 +21,7 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
     @Override
     protected AuthenticationInfo doMultiRealmAuthentication(Collection<Realm> realms, AuthenticationToken token)
             throws AuthenticationException {
-        AuthenticationStrategy strategy = getAuthenticationStrategy();
+        AuthenticationStrategy strategy = this.getAuthenticationStrategy();
         AuthenticationInfo aggregate = strategy.beforeAllAttempts(realms, token);
         if (log.isTraceEnabled()) {
             log.trace("Iterating through {} realms for PAM authentication", realms.size());
@@ -36,6 +38,7 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
                 try {
                     info = realm.getAuthenticationInfo(token);
                 } catch (AuthenticationException e) {
+                    // 默认是使用Throwable来接收异常
                     authenticationException = e;
                     if (log.isDebugEnabled()) {
                         String msg = "Realm [" + realm
@@ -49,6 +52,8 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
                 log.debug("Realm [{}] does not support token {}.  Skipping realm.", realm, token);
             }
         }
+
+
         if (authenticationException != null) {
             throw authenticationException;
         }
