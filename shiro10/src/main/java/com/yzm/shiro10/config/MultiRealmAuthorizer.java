@@ -16,7 +16,7 @@ public class MultiRealmAuthorizer extends ModularRealmAuthorizer {
     public boolean hasRole(PrincipalCollection principals, String roleIdentifier) {
         assertRealmsConfigured();
 
-        //获取realm的名字
+        // 当前登录人认证时使用的Realm名
         Set<String> realmNames = principals.getRealmNames();
         String realmName = realmNames.iterator().next();
         for (Realm realm : getRealms()) {
@@ -38,7 +38,7 @@ public class MultiRealmAuthorizer extends ModularRealmAuthorizer {
     public boolean isPermitted(PrincipalCollection principals, String permission) {
         assertRealmsConfigured();
 
-        //获取realm的名字
+        // 当前登录人认证时使用的Realm名
         Set<String> realmNames = principals.getRealmNames();
         String realmName = realmNames.iterator().next();
         for (Realm realm : getRealms()) {

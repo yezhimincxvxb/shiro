@@ -6,6 +6,8 @@ import com.yzm.shiro10.service.UserService;
 import com.yzm.shiro10.utils.EncryptUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.authz.ModularRealmAuthorizer;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -73,12 +75,12 @@ public class ShiroConfig {
         // FirstSuccessfulStrategy：只要有一个Realm验证成功即可，只返回第一个Realm身份验证成功的认证信息，其他的忽略；
         // AtLeastOneSuccessfulStrategy：只要有一个Realm验证成功即可，和FirstSuccessfulStrategy不同，返回所有Realm身份验证成功的认证信息；
         // AllSuccessfulStrategy：所有Realm验证成功才算成功，且返回所有Realm身份验证成功的认证信息，如果有一个失败就失败了。
-        MultiRealmAuthenticator multiRealmAuthenticator = new MultiRealmAuthenticator();
+        ModularRealmAuthenticator multiRealmAuthenticator = new MultiRealmAuthenticator();
         multiRealmAuthenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
         securityManager.setAuthenticator(multiRealmAuthenticator);
 
         // 自定义授权器
-        MultiRealmAuthorizer multiRealmAuthorizer = new MultiRealmAuthorizer();
+        ModularRealmAuthorizer multiRealmAuthorizer = new MultiRealmAuthorizer();
         securityManager.setAuthorizer(multiRealmAuthorizer);
 
         // 多个Realm
@@ -89,7 +91,7 @@ public class ShiroConfig {
     }
 
     /**
-     * 开启注解方式控制访问url
+     * 开启注解
      */
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
@@ -109,23 +111,21 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter() {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager());
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        shiroFilterFactoryBean.setUnauthorizedUrl("/401");
-
         return shiroFilterFactoryBean;
     }
 
     /**
-     * 解决： 登录页以及无权限页面不跳转问题
+     * 问题：未登录不会自动跳转到登录页、无权访问页面不跳转
+     * 原因：Shiro注解模式下，登录失败与没有权限都是通过抛出异常,并且默认并没有去处理或者捕获这些异常。
+     * 解决：通过在SpringMVC下配置捕获相应异常来通知用户信息
      */
     @Bean
     public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver simpleMappingExceptionResolver = new SimpleMappingExceptionResolver();
         Properties properties = new Properties();
-        // 登录后没有权限跳转到/401
-        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "/401");
-        // 未登录访问接口跳转到/login
-        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "/login");
+        // 未登录访问接口跳转到/login、登录后没有权限跳转到/401
+        properties.setProperty("org.apache.shiro.authz.UnauthenticatedException", "redirect:/login");
+        properties.setProperty("org.apache.shiro.authz.UnauthorizedException", "redirect:/401");
         simpleMappingExceptionResolver.setExceptionMappings(properties);
         return simpleMappingExceptionResolver;
     }

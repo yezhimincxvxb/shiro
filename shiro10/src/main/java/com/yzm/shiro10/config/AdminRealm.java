@@ -21,8 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 自定义realm
- * 实现身份认证和权限授权
+ * 自定义AdminRealm
  */
 @Slf4j
 public class AdminRealm extends AuthorizingRealm {

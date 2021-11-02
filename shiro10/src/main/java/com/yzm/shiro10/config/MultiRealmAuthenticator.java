@@ -21,7 +21,7 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
 
             CustomToken customToken = (CustomToken) authenticationToken;
 
-            // 登录类型对应的Realm
+            // 根据登录类型选择对应的Realm
             Collection<Realm> typeRealms = new ArrayList<>();
             for (Realm realm : getRealms()) {
                 if (realm.getName().contains(customToken.getLoginType())) typeRealms.add(realm);
@@ -31,6 +31,7 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
                     this.doSingleRealmAuthentication(typeRealms.iterator().next(), authenticationToken) :
                     this.doMultiRealmAuthentication(typeRealms, authenticationToken);
         }
+
         return super.doAuthenticate(authenticationToken);
     }
 
